@@ -15,8 +15,9 @@
           <div id="energy">Energy: 0</div>
           <div class="other-stats">
             <div id="atoms">Atoms: 0</div>
-            <div id="eps">Energy/sec: 0</div>
+            <div id="eps">Energy/sec: 0.0</div>
             <div id="apc">Atoms/click: 1</div>
+            <div id="aps">Atoms/sec: 0</div>
           </div>
         </div>
         <button id="clickButton"><img src="assets/atom.svg" />Get Atom</button>
@@ -49,10 +50,25 @@
           </div>
           <div class="upgrade-btn" id="up2">500</div>
         </div>
-        <h2 style="text-align: center; margin-top: 30px">More coming soon!</h2>
+        <div class="upgrade-item">
+          <div class="upgrade-info">
+            <div class="upgrade-title">Generation Tech</div>
+            <div class="upgrade-description">
+              Gain one more atom per second.
+            </div>
+          </div>
+          <div class="upgrade-btn" id="up3">1000</div>
+        </div>
+        <h2 style="text-align: center; margin-block: 30px">
+          More coming soon!
+        </h2>
       </div>
     </div>
-    <div class="version">v.0.1.0 | 7/15/2024</div>
+    <div class="version">v.0.2.0 | 7/16/2024</div>
+    <div id="reset">Reset Progress</div>
+    <div id="gold-atom">
+      <img src="assets/golden-atom.png" class="gold-atom" />
+    </div>
     <script src="app.js"></script>
   </body>
 </html>
