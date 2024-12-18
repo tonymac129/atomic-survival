@@ -7,3 +7,6 @@ published beta release version on https://tonymac129.github.io/atomic-survival/
 
 v.0.2.0 | 7/17/2024
 added changelog, reset progress, golden atom, fixed a couple bugs, issues, and added improvements, added new upgrade: Generation Tech, added new stat atoms per second, improved progress saving, logic improvements, appearance updates, and smoother game experience.
+
+v.0.6.0 | 12/17/2024
+removed atom system, only energy as curreny, updated gold atom, update entire code, update variable values, balance changes, new upgrades, remvoed upgrades, appearance changes, content changes, feature updates, new upgrade prices, added challenges and prestige button placeholders, new icons, idle income updates, different growth rates for different upgrades, added max upgrade amount, updated progress save, improved code logic, updated upgrade description, removed space bar to click feature, optimized code, fixed gold atom giving duplicate rewards, and smoother game experience.

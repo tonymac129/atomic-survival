@@ -1,15 +1,11 @@
 let energy = 0;
 let energyPerSec = 0;
-let atoms = 0;
-let atomValue = 0.5;
-let atomsPerClick = 1;
-let atomsPerSecond = 0;
+let energyPerClick = 1;
+let idleIncomeMultiplier = 0.1;
 let btn = document.getElementById("clickButton");
-let atomsE = document.getElementById("atoms");
 let energyE = document.getElementById("energy");
 let energyPerSecE = document.getElementById("eps");
-let atomsPerClickE = document.getElementById("apc");
-let atomsPerSecondE = document.getElementById("aps");
+let energyPerClickE = document.getElementById("epc");
 let upgradeBtn = document.getElementById("upgrades");
 let popup = document.getElementById("popup");
 let popupClose = document.getElementById("popup-close");
@@ -20,83 +16,82 @@ let up3 = document.getElementById("up3");
 let progress = localStorage.getItem("atomic-survival-progress");
 let goldAtomE = document.getElementById("gold-atom");
 let resetBtn = document.getElementById("reset");
+let maxAmount = [10, 30, 10];
+let priceGrowthRates = [1.6, 1.2, 2];
+let initialPrices = [200, 1000, 5000];
 
 if (progress) {
-  savedArray = progress.split(",");
+  let savedArray = progress.split(",");
   let loadGameTime = new Date().getTime();
   let saveGameTime = parseInt(savedArray[0]);
   let timeDifference = loadGameTime - saveGameTime;
   let secondDifference = timeDifference / 1000;
   energy = parseInt(savedArray[1]);
-  atoms = parseInt(savedArray[3]);
   energyPerSec = parseFloat(savedArray[2]);
-  atomsPerSecond = parseInt(savedArray[8]);
-  atomValue = parseFloat(savedArray[4]);
-  atomsPerClick = parseInt(savedArray[5]);
-  let totalIdleIncome = Math.floor(secondDifference * energyPerSec);
-  let totalIdleAtoms = Math.floor(secondDifference * atomsPerSecond);
-  atoms += totalIdleAtoms;
-  energyPerSec += totalIdleAtoms * atomValue;
-  energy += totalIdleIncome;
-  alert(
-    `While you were away, you earned ${totalIdleIncome} energy and generated ${totalIdleAtoms} new atoms!`
-  );
-  up1.innerHTML = parseInt(savedArray[6]);
-  up2.innerHTML = parseInt(savedArray[7]);
-  up3.innerHTML = parseInt(savedArray[9]);
-  atomsPerClickE.innerHTML = `Atoms/click: ${atomsPerClick}`;
-  energyPerSecE.innerHTML = `Energy/sec: ${energyPerSec.toFixed(1)}`;
-  energyE.innerHTML = `Energy: ${Math.floor(energy)}`;
-  atomsE.innerHTML = `Atoms: ${atoms}`;
-  atomsPerSecondE.innerHTML = `Atoms/sec: ${atomsPerSecond}`;
-  if (atomsPerClick > 1) {
-    btn.innerHTML = `<img src="assets/atom.svg" />Get Atoms`;
+  energyPerClick = parseInt(savedArray[3]);
+  if (savedArray[4] !== "Max") {
+    up1.innerHTML = parseInt(savedArray[4]);
+  } else {
+    up1.innerHTML = "Max";
+    up1.style.backgroundColor = "black";
+    up1.style.cursor = "default";
   }
+  if (savedArray[5] !== "Max") {
+    up2.innerHTML = parseInt(savedArray[5]);
+  } else {
+    up2.innerHTML = "Max";
+    up2.style.backgroundColor = "black";
+    up2.style.cursor = "default";
+  }
+  if (savedArray[6] !== "Max") {
+    up3.innerHTML = parseInt(savedArray[6]);
+  } else {
+    up3.innerHTML = "Max";
+    up3.style.backgroundColor = "black";
+    up3.style.cursor = "default";
+  }
+  idleIncomeMultiplier = parseFloat(savedArray[7]);
+  let totalIdleIncome = Math.floor(
+    secondDifference * energyPerSec * idleIncomeMultiplier
+  );
+  energy += totalIdleIncome;
+  energyE.innerHTML = `Energy: ${Math.floor(energy)}`;
+  energyPerClickE.innerHTML = `Energy/click: ${Math.floor(energyPerClick)}`;
+  alert(`While you were away, you earned ${totalIdleIncome} new energy!`);
 }
 
 up1.addEventListener("click", () => {
   if (energy >= up1.innerHTML) {
     energy -= up1.innerHTML;
-    up1.innerHTML *= 5;
-    energyPerSec += (atoms * 0.1) / 2;
-    atomValue *= 1.1;
+    up1.innerHTML = Math.floor(priceGrowthRates[0] * up1.innerHTML);
+    energyPerClick++;
+    energyPerClickE.innerHTML = `Energy/click: ${energyPerClick}`;
+    checkUpgradable();
+    checkMax(up1, 0);
   }
-  checkUpgradable();
 });
 
 up2.addEventListener("click", () => {
   if (energy >= up2.innerHTML) {
     energy -= up2.innerHTML;
-    up2.innerHTML *= 5;
-    atomsPerClick++;
-    btn.innerHTML = `<img src="assets/atom.svg" />Get Atoms`;
+    up2.innerHTML = Math.floor(priceGrowthRates[1] * up2.innerHTML);
+    energyPerSec++;
+    energyPerSecE.innerHTML = `Energy/sec: ${energyPerSec}`;
   }
   checkUpgradable();
+  checkMax(up2, 1);
 });
 
 up3.addEventListener("click", () => {
   if (energy >= up3.innerHTML) {
     energy -= up3.innerHTML;
-    up3.innerHTML *= 5;
-    atomsPerSecond++;
-    atomsPerSecondE.innerHTML = `Atoms/sec: ${atomsPerSecond}`;
+    up3.innerHTML *= priceGrowthRates[2];
+    idleIncomeMultiplier += 0.1;
   }
   checkUpgradable();
+  checkMax(up3, 2);
 });
 
-document.addEventListener("keydown", function (e) {
-  if (e.key === " ") {
-    btn.style.transform = "translate(1px, 1px)";
-    btn.style.boxShadow = "none";
-  }
-});
-document.addEventListener("keyup", function (e) {
-  if (e.key === " ") {
-    newAtom();
-    btn.style.transform = "translate(0px, 0px)";
-    btn.style.boxShadow = "3px 3px 5px green";
-  }
-});
 btn.addEventListener("mousedown", function () {
   btn.style.transform = "translate(1px, 1px)";
   btn.style.boxShadow = "none";
@@ -104,7 +99,8 @@ btn.addEventListener("mousedown", function () {
 
 document.addEventListener("mouseup", function (e) {
   if (e.target === btn) {
-    newAtom();
+    energy += energyPerClick;
+    energyE.innerHTML = `Energy: ${Math.floor(energy)}`;
     btn.style.transform = "translate(0px, 0px)";
     btn.style.boxShadow = "3px 3px 5px green";
   } else {
@@ -139,34 +135,34 @@ resetBtn.addEventListener("click", () => {
   }
 });
 
-function newAtom() {
-  atoms += atomsPerClick;
-  energyPerSec += atomValue * atomsPerClick;
-  atomsE.innerHTML = `Atoms: ${atoms}`;
-}
-
 function newEnergy() {
   energy += energyPerSec;
-  atomsPerClickE.innerHTML = `Atoms/click: ${atomsPerClick}`;
   energyPerSecE.innerHTML = `Energy/sec: ${energyPerSec.toFixed(1)}`;
   energyE.innerHTML = `Energy: ${Math.floor(energy)}`;
   checkUpgradable();
-}
-
-function autoAtom() {
-  atoms += atomsPerSecond;
-  energyPerSec += atomValue * atomsPerSecond;
-  atomsE.innerHTML = `Atoms: ${atoms}`;
 }
 
 function checkUpgradable() {
   upgradeBtns.forEach((item) => {
     if (energy >= item.innerHTML) {
       item.style.backgroundColor = "green";
-    } else {
+    } else if (item.innerHTML !== "Max") {
       item.style.backgroundColor = "rgb(40,40,40)";
     }
   });
+}
+
+function checkMax(element, index) {
+  let sum = initialPrices[index];
+  for (let i = 0; i < maxAmount[index]; i++) {
+    sum *= priceGrowthRates[index];
+    sum = Math.floor(sum);
+  }
+  if (element.innerHTML - sum === 0) {
+    element.innerHTML = "Max";
+    element.style.backgroundColor = "black";
+    element.style.cursor = "default";
+  }
 }
 
 function saveProgress() {
@@ -175,13 +171,11 @@ function saveProgress() {
     time,
     energy,
     energyPerSec,
-    atoms,
-    atomValue,
-    atomsPerClick,
+    energyPerClick,
     up1.innerHTML,
     up2.innerHTML,
-    atomsPerSecond,
     up3.innerHTML,
+    idleIncomeMultiplier,
   ];
   localStorage.setItem("atomic-survival-progress", progressArray.join(","));
 }
@@ -196,33 +190,29 @@ function goldAtom() {
     goldAtomE.style.visibility = "visible";
     goldAtomE.style.top = randomHeight + "px";
     goldAtomE.style.left = randomWidth + "px";
+    let clicked = false;
     goldAtomE.onclick = () => {
-      let random = Math.round(Math.random());
-      if (random === 0) {
+      if (!clicked) {
+        clicked = true;
         if (energyPerSec === 0) {
           energy += 100;
+          goldAtomE.innerHTML = `Energy +100`;
         } else {
           energy += Math.floor(energyPerSec * 100);
+          goldAtomE.innerHTML = `Energy +${Math.floor(energyPerSec * 100)}`;
         }
-        goldAtomE.innerHTML = `Energy +${Math.floor(energyPerSec * 100)}`;
-      } else {
-        atoms += Math.floor(atomsPerClick * 100);
-        energyPerSec += atomValue * atomsPerClick * 100;
-        atomsE.innerHTML = `Atoms: ${atoms}`;
-        goldAtomE.innerHTML = `Atoms +${Math.floor(atomsPerClick * 100)}`;
+        setTimeout(() => {
+          goldAtomE.style.visibility = "hidden";
+          goldAtomE.innerHTML = `<img src="assets/golden-atom.png" class="gold-atom" />`;
+        }, 1500);
       }
       setTimeout(() => {
         goldAtomE.style.visibility = "hidden";
-        goldAtomE.innerHTML = `<img src="assets/golden-atom.png" class="gold-atom" />`;
-      }, 1500);
+      }, 2000);
     };
-    setTimeout(() => {
-      goldAtomE.style.visibility = "hidden";
-    }, 5000);
   }
 }
 
+let progressSaving = setInterval(saveProgress, 5000);
 setInterval(newEnergy, 1000);
-setInterval(autoAtom, 1000);
-let progressSaving = setInterval(saveProgress, 1000);
 setInterval(goldAtom, 10000);
